@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head><title>Погода в {{ city }}</title></head>
+<body>
+    <h2>Погода в {{ city }}</h2>
+    <p><strong>Температура сейчас:</strong> {{ current_weather.temperature }} °C</p>
+
+    <h3>Прогноз на дни</h3>
+    <ul>
+    {% for item in daily_forecast %}
+        <li>
+        <strong>{{ item.date }}</strong>: 
+        {{ item.weather }}, 
+        Температура: {{ item.temp_min }}°C — {{ item.temp_max }}°C, 
+        Ветер: {{ item.wind }} км/ч
+        </li>
+    {% endfor %}
+    </ul>
+
+
+
+    <a href="/">Назад</a>
+</body>
+</html>

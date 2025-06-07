@@ -1,0 +1,76 @@
+<h1>Прогноз погоды</h1>
+<form id="search-form" action="/weather" method="get">
+  <input type="text" id="city" name="city" autocomplete="off" placeholder="Введите город..." />
+  <ul id="suggestions" style="border: 1px solid #ccc; display: none; position: absolute; background: white;"></ul>
+  <button type="submit">Показать погоду</button>
+</form>
+
+{% if suggested_city %}
+  <hr>
+  <form action="/weather" method="get">
+    <input type="hidden" name="city" value="{{ suggested_city }}">
+    <button type="submit">Показать погоду в {{ suggested_city }}</button>
+  </form>
+{% endif %}
+
+{% if error %}
+  <p style="color:red;">{{ error }}</p>
+{% endif %}
+
+{% if history %}
+  <h2>История ваших запросов</h2>
+  <ul>
+    {% for item in history %}
+      <li>{{ item.city }} — {{ item.timestamp.strftime('%Y-%m-%d %H:%M') }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+{% if popular_cities %}
+  <h2>Популярные города</h2>
+  <ul>
+    {% for city, count in popular_cities %}
+      <li>{{ city }} — {{ count }} запросов</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<script>
+const input = document.getElementById('city');
+const suggestionsList = document.getElementById('suggestions');
+const form = document.getElementById('search-form');
+
+input.addEventListener('input', async () => {
+  const query = input.value.trim();
+  if (query.length < 2) {
+    suggestionsList.style.display = 'none';
+    return;
+  }
+
+  const res = await fetch(`/api/suggest_cities?q=${encodeURIComponent(query)}`);
+  const suggestions = await res.json();
+
+  suggestionsList.innerHTML = '';
+  suggestions.forEach(city => {
+    const li = document.createElement('li');
+    li.textContent = city;
+    li.style.cursor = 'pointer';
+    li.style.padding = '4px';
+    li.addEventListener('click', () => {
+      input.value = city;
+      suggestionsList.style.display = 'none';
+      form.submit();
+    });
+    suggestionsList.appendChild(li);
+  });
+
+  suggestionsList.style.display = 'block';
+});
+
+
+document.addEventListener('click', (e) => {
+  if (!suggestionsList.contains(e.target) && e.target !== input) {
+    suggestionsList.style.display = 'none';
+  }
+});
+</script>
